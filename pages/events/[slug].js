@@ -1,9 +1,10 @@
 import Layout from "@/components/Layout";
-
-export default function Home() {
+function EventPage() {
   return (
     <Layout>
-      <h1>Home</h1>
+      <h1>Event</h1>
     </Layout>
   );
 }
+
+export default EventPage;

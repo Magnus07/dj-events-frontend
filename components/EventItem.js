@@ -1,8 +1,19 @@
 import Link from "next/link";
 import Image from "next/image";
 import styles from "@/styles/EventItem.module.css";
+import { useState, useEffect } from "react";
 
 export default function EventItem({ evt }) {
+  const useFormattedDate = (date) => {
+    const [formattedDate, setFormattedDate] = useState(null);
+
+    useEffect(
+      () => setFormattedDate(new Date(date).toLocaleDateString("en-US")),
+      []
+    );
+
+    return formattedDate;
+  };
   return (
     <div className={styles.event}>
       <div className={styles.img}>
@@ -18,8 +29,7 @@ export default function EventItem({ evt }) {
       </div>
       <div className={styles.info}>
         <span>
-          {new Date(evt.attributes.date).toLocaleDateString("en-US")} at{" "}
-          {evt.attributes.time}
+          {useFormattedDate(evt.attributes.date)} at {evt.attributes.time}
         </span>
         <h3>{evt.attributes.name}</h3>
       </div>

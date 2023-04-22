@@ -1,13 +1,14 @@
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { FaImage } from "react-icons/fa";
 import Layout from "@/components/Layout";
 import { API_URL } from "@/config";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import styles from "@/styles/Form.module.css";
-import { stringify } from "qs";
+import Image from "next/image";
 import moment from "moment";
 export default function EditEventPage({ evt }) {
   const [values, setValues] = useState({
@@ -20,32 +21,33 @@ export default function EditEventPage({ evt }) {
     description: evt.attributes.description,
   });
 
+  const [imagePreview, setImagePreview] = useState(
+    evt.attributes.image?.data
+      ? evt.attributes.image.data.attributes.formats.thumbnail.url
+      : null
+  );
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Validation
-
     const hasEmptyFields = Object.values(values).some(
       (element) => element === ""
     );
     if (hasEmptyFields) {
       toast.error("Please fill in all fields");
     }
-
-    const res = await fetch(`${API_URL}/events/${evt}`, {
+    const res = await fetch(`${API_URL}/events/${evt.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ data: values }),
     });
-
     if (!res.ok) {
-      console.log(res);
-      toast.error("Something went wrong");
+      toast.error("Something Went Wrong");
     } else {
-      var evt = await res.json();
-      evt = evt.data;
-      router.push(`/events/${evt.attributes.slug}`);
+      const evt = await res.json();
+      router.push(`/events/${evt.data.attributes.slug}`);
     }
   };
 
@@ -136,12 +138,26 @@ export default function EditEventPage({ evt }) {
         </div>
         <input type="submit" className="btn" value="Update Event" />
       </form>
+      <h2>Event Image</h2>
+      {imagePreview ? (
+        <Image src={imagePreview} height={100} width={170} />
+      ) : (
+        <div>
+          <p>No image uploaded</p>
+        </div>
+      )}
+
+      <div>
+        <button className="btn-secondary">
+          <FaImage /> Set Image
+        </button>
+      </div>
     </Layout>
   );
 }
 
 export async function getServerSideProps({ params: { id } }) {
-  const res = await fetch(`${API_URL}/events/${id}`);
+  const res = await fetch(`${API_URL}/events/${id}?populate=*`);
   var evt = await res.json();
   evt = evt.data;
 

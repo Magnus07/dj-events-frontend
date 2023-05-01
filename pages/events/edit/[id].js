@@ -12,8 +12,9 @@ import Image from "next/image";
 import moment from "moment";
 import Modal from "@/components/Modal";
 import ImageUpload from "@/components/ImageUpload";
+import { parseCookies } from "@/helpers";
 
-export default function EditEventPage({ evt }) {
+export default function EditEventPage({ evt, token }) {
   const [values, setValues] = useState({
     name: evt.attributes.name,
     performers: evt.attributes.performers,
@@ -45,10 +46,15 @@ export default function EditEventPage({ evt }) {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ data: values }),
     });
     if (!res.ok) {
+      if (res.status === 403 || res.status === 401) {
+        toast.error("Unauthorized");
+        return;
+      }
       toast.error("Something Went Wrong");
     } else {
       const evt = await res.json();
@@ -168,13 +174,18 @@ export default function EditEventPage({ evt }) {
       </div>
 
       <Modal show={showModal} onClose={() => setShowModal(false)}>
-        <ImageUpload evtId={evt.id} imageUploaded={imageUploaded} />
+        <ImageUpload
+          evtId={evt.id}
+          imageUploaded={imageUploaded}
+          token={token}
+        />
       </Modal>
     </Layout>
   );
 }
 
-export async function getServerSideProps({ params: { id } }) {
+export async function getServerSideProps({ params: { id }, req }) {
+  const { token } = parseCookies(req);
   const res = await fetch(`${API_URL}/events/${id}?populate=*`);
   var evt = await res.json();
   evt = evt.data;
@@ -182,6 +193,7 @@ export async function getServerSideProps({ params: { id } }) {
   return {
     props: {
       evt,
+      token,
     },
   };
 }

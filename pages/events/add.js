@@ -7,8 +7,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import styles from "@/styles/Form.module.css";
-import { stringify } from "qs";
-export default function AddEventPage({ events }) {
+import { parseCookies } from "@/helpers";
+
+export default function AddEventPage({ token }) {
   const [values, setValues] = useState({
     name: "",
     performers: "",
@@ -34,12 +35,16 @@ export default function AddEventPage({ events }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ data: values }),
+      body: JSON.stringify({ data: { ...values } }),
     });
 
     if (!res.ok) {
-      console.log(res);
+      if (res.status === 403 || res.status === 401) {
+        toast.error("No token included");
+        return;
+      }
       toast.error("Something went wrong");
     } else {
       var evt = await res.json();
@@ -137,4 +142,11 @@ export default function AddEventPage({ events }) {
       </form>
     </Layout>
   );
+}
+
+export async function getServerSideProps({ req }) {
+  const { token } = parseCookies(req);
+  return {
+    props: { token },
+  };
 }

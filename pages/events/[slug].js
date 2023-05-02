@@ -8,6 +8,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { FaPencilAlt, FaTimes } from "react-icons/fa";
 import { useRouter } from "next/router";
+import EventMap from "@/components/EventMap";
+
 export default function EventPage({ evt }) {
   const router = useRouter();
   return (
@@ -36,6 +38,9 @@ export default function EventPage({ evt }) {
         <p>{evt.attributes.description}</p>
         <h3>Venue: {evt.attributes.venue}</h3>
         <p>{evt.attributes.address}</p>
+
+        <EventMap evt={evt} />
+
         <Link href={`/events`} legacyBehavior>
           <a className={styles.back}>{"<"} Go Back</a>
         </Link>
